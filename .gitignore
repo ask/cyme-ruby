@@ -1,0 +1,10 @@
+*.bundle
+builds/
+/coverage/
+^coverage/
+/vendor/cache
+^vendor/cache/
+.DS_Store
+*~
+.*.sw[pon]
+erl_crash.dump
