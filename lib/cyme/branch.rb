@@ -1,29 +1,30 @@
+# encoding: utf-8
+
 require 'socket'
 require 'fileutils'
 
 require 'cyme/client'
+require 'cyme/exceptions'
+require 'cyme/utils'
 
 CYME_PORT = 1968
 DEFAULT_BROKER = "amqp://guest:guest@localhost:5672//"
 
 module Cyme
 
-
-class TimeoutError < Exception
-    attr :timeout
-    attr :ppid
-
-    def initialize(timeout, ppid)
-        @timeout = timeout
-        @ppid = ppid
-    end
-
-    def to_s
-        "timeout after #{@timeout}s (ppid=#{@ppid})"
-    end
-end
-
-
+# Interface to +cyme-branch+
+#
+# @param [String] workdir  Working directory (_required_).
+# @param [String] :id  The id of the branch, defaults to
+#                      +cyme+ + current hostname.
+# @param [String] :broker  Broker URL for the master bus (defaults to
+#                          +amqp://guest:guest@localhost:5672//+).
+# @param [String] :loglevel  Loglevel, can be one of *CRITICAL*/*ERROR*/
+#                            *WARNING*/*INFO*/*DEBUG* (defaults to *INFO*).
+# @param [Integer] :controllers  Number of controller threads (defaults to 2).
+# @param [Integer] :port  Listening port for the HTTP service
+#                         (defaults to 1968).
+# @param [Boolean] :debug  Output debugging information.
 class Branch
     attr :id
     attr :broker
@@ -32,27 +33,30 @@ class Branch
     attr :controllers
     attr :port
 
-    def initialize(workdir, id=nil, broker=nil, loglevel="INFO",
-                   controllers=2, port=nil, debug=nil)
-        @id = id || ["cyme", Socket.gethostname()].join(".")
-        @broker = broker || DEFAULT_BROKER
+    def initialize(workdir, opts={})
         @workdir = File.expand_path(workdir)
-        @loglevel = loglevel
-        @controllers = controllers
-        @port = port || CYME_PORT
-        @DEBUG = !debug.nil? ? debug : ENV["CYME_DEBUG"]
+        @id = opts[:id] || ["cyme", Socket.gethostname()].join(".")
+        @broker = opts[:broker] || DEFAULT_BROKER
+        @loglevel = opts[:loglevel] || "INFO"
+        @controllers = opts[:controllers] || 2
+        @port = opts[:port] || CYME_PORT
+        @DEBUG = !opts[:debug].nil? ? opts[:debug] : ENV["CYME_DEBUG"]
     end
 
     def client()
         Client.new(url())
     end
 
-    def restart(out=STDOUT, timeout=30.0, interval=0.5)
-        stop("TERM", out, timeout, interval)
-        start(out, timeout, interval)
+    def restart(opts={})
+        stop(opts.merge(:sig => :TERM))
+        start(opts)
     end
 
-    def start(out=STDOUT, timeout=30.0, interval=0.5)
+    def start(opts={})
+        out = opts[:out] || STDOUT
+        timeout = opts[:timeout] || 30.0
+        interval = opts[:interval] || 0.5
+
         s = Status.new "Starting cyme-branch #{@id}", out
         return s.ALREADY_STARTED if responds_to_signal?
 
@@ -61,6 +65,7 @@ class Branch
         cmd = [cyme_branch()] + argv()
         out.puts(">>> #{cmd.join(' ')}") if @DEBUG
         read, write = IO.pipe()
+        reader = AsyncReader.new(read)
         ppid = Process.fork() do
             STDOUT.reopen(write)
             STDERR.reopen(write)
@@ -68,9 +73,13 @@ class Branch
         end
 
         (timeout / interval).ceil.times do
+            reader.update(:debug => @DEBUG)
             return s.OK(ppid) if is_alive?
             s.step(sleep(interval))
         end
+
+        # show output after timeout
+        reader.dump()
 
         # Kill the processes we created so we don't leave a mess.
         s.TIMEOUT(ppid)
@@ -108,7 +117,12 @@ class Branch
         responds_to_signal? && responds_to_ping?
     end
 
-    def stop(sig="TERM", out=STDOUT, timeout=30.0, interval=0.5)
+    def stop(opts={})
+        sig = opts[:sig] || :TERM
+        out = opts[:out] || STDOUT
+        timeout = opts[:timeout] or 30.0
+        interval = opts[:interval] or 0.5
+
         s = Status.new "Stopping cyme-branch #{@id}", out
         return s.NOT_RUNNING if !responds_to_signal?
 
@@ -128,11 +142,11 @@ class Branch
     end
 
     def stop!()
-        stop("KILL")
+        stop(:sig => :KILL)
     end
 
     def path(*args)
-        File.join(@workdir, *args)
+        File.join(workdir, *args)
     end
 
     def cyme_branch()
@@ -161,19 +175,19 @@ class Branch
     end
 
     def url()
-        "http://#{addr()}:#{@port}/"
+        "http://#{addr()}:#{port}/"
     end
 
     def argv()
-        %W{--broker=#{@broker}
+        %W{--broker=#{broker}
            --id=#{@id}
            --detach
            --sup-interval=5
            --instance-dir=#{instances}
            --pidfile=#{pidfile()}
            --logfile=#{logfile()}
-           --loglevel=#{@loglevel}
-           :#{@port}
+           --loglevel=#{loglevel}
+           :#{port}
         }
     end
 end
@@ -184,41 +198,16 @@ class Status
 
     def initialize(msg, out=STDOUT)
         @out = out
-        start(msg)
-    end
-
-    def start(msg)
         @out.write("* #{msg}...")
-        true
     end
 
     def step(*_)
         @out.write(".")
     end
 
-    def done(msg, ret=true)
-        @out.write(" [#{msg}]\n")
-        ret
-    end
-
-    def OK(ret=true)
-        done "OK", ret
-    end
-
-    def TIMEOUT(ret=true)
-        done "TIMEOUT", ret
-    end
-
-    def ALREADY_STARTED(ret=true)
-        done "ALREADY_STARTED", ret
-    end
-
-    def NOT_RUNNING(ret=true)
-        done "NOT_RUNNING", ret
-    end
-
-    def KILLED(ret=true)
-        done "KILLED", ret
+    def method_missing(msg, *args, &block)
+        @out.write(" [#{msg.to_s.upcase}]\n")
+        args[0]
     end
 end
 
