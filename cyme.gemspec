@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
         file =~ /^(?:vendor|gemfiles)\//
     }
     s.require_paths = ["lib"]
-    s.extra_rdoc_files = ["README.textile"]
+    s.extra_rdoc_files = ["README.md"]
 
     # dependencies
     s.add_dependency "restclient"
