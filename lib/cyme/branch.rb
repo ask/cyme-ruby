@@ -32,6 +32,8 @@ class Branch
     attr :loglevel
     attr :controllers
     attr :port
+    attr :detach
+    attr :started
 
     def initialize(workdir, opts={})
         @workdir = File.expand_path(workdir)
@@ -40,11 +42,13 @@ class Branch
         @loglevel = opts[:loglevel] || "INFO"
         @controllers = opts[:controllers] || 2
         @port = opts[:port] || CYME_PORT
+        @detach = !opts[:detach].nil? ? opts[:detach] : true
         @DEBUG = !opts[:debug].nil? ? opts[:debug] : ENV["CYME_DEBUG"]
+        @started = false
     end
 
-    def client()
-        Client.new(url())
+    def client
+        Client.new(url)
     end
 
     def restart(opts={})
@@ -52,29 +56,42 @@ class Branch
         start(opts)
     end
 
+    def _fork
+        Process.fork() do
+            yield
+        end
+    end
+
+    def _exec(argv)
+        exec(*argv)
+    end
+
     def start(opts={})
         out = opts[:out] || STDOUT
         timeout = opts[:timeout] || 30.0
         interval = opts[:interval] || 0.5
 
-        s = Status.new "Starting cyme-branch #{@id}", out
+        s = Status.new("Starting cyme-branch #@id", out)
         return s.ALREADY_STARTED if responds_to_signal?
 
-        FileUtils.mkdir_p(instances())
-        s.step
-        cmd = [cyme_branch()] + argv()
+        FileUtils.mkdir_p(instances)
+        s.step()
+        cmd = [cyme_branch] + argv
         out.puts(">>> #{cmd.join(' ')}") if @DEBUG
         read, write = IO.pipe()
         reader = AsyncReader.new(read)
-        ppid = Process.fork() do
+        ppid = fork() do
             STDOUT.reopen(write)
             STDERR.reopen(write)
-            exec(*cmd)
+            _exec(cmd)
         end
 
         (timeout / interval).ceil.times do
             reader.update(:debug => @DEBUG)
-            return s.OK(ppid) if is_alive?
+            if is_alive?
+                @started = true
+                return s.OK(ppid)
+            end
             s.step(sleep(interval))
         end
 
@@ -93,7 +110,7 @@ class Branch
     end
 
     def kill(sig)
-        Process.kill(sig, pid())
+        Process.kill(sig, pid)
     end
 
     def _responds_to_signal?
@@ -120,15 +137,15 @@ class Branch
     def stop(opts={})
         sig = opts[:sig] || :TERM
         out = opts[:out] || STDOUT
-        timeout = opts[:timeout] or 30.0
-        interval = opts[:interval] or 0.5
+        timeout = opts[:timeout] || 30.0
+        interval = opts[:interval] || 0.5
 
-        s = Status.new "Stopping cyme-branch #{@id}", out
-        return s.NOT_RUNNING if !responds_to_signal?
+        s = Status.new("Stopping cyme-branch #@id", out)
+        return s.NOT_RUNNING unless responds_to_signal?
 
         (timeout / interval * 5).ceil.times do
             begin
-                kill sig
+                kill(sig)
                 5.times do
                     _responds_to_signal?
                     sleep(interval)
@@ -141,7 +158,7 @@ class Branch
         return s.TIMEOUT kill("KILL")
     end
 
-    def stop!()
+    def stop!
         stop(:sig => :KILL)
     end
 
@@ -149,7 +166,7 @@ class Branch
         File.join(workdir, *args)
     end
 
-    def cyme_branch()
+    def cyme_branch
         "cyme-branch"
     end
 
@@ -157,38 +174,46 @@ class Branch
         path("instances", *args)
     end
 
-    def logfile()
+    def logfile
         instances("branch.log")
     end
 
-    def pidfile()
+    def pidfile
         instances("branch.pid")
     end
 
-    def pid()
-        File.read(pidfile()).to_i
+    def pid
+        File.read(pidfile()).to_i()
     end
 
-    def addr()
+    def addr
         ip = IPSocket.getaddress(Socket.gethostname())
         return ip == '::1' ? '127.0.0.1' : ip
     end
 
-    def url()
-        "http://#{addr()}:#{port}/"
+    def url
+        "http://#{addr}:#@port/"
     end
 
-    def argv()
-        %W{--broker=#{broker}
-           --id=#{@id}
-           --detach
-           --sup-interval=5
-           --instance-dir=#{instances}
-           --pidfile=#{pidfile()}
-           --logfile=#{logfile()}
-           --loglevel=#{loglevel}
-           :#{port}
-        }
+    def to_arg(k)
+        k.to_s.tr("_", "-")
+    end
+
+    def options(opts={}, acc="")
+        opts.delete(nil)    # remove possible predicate
+        opts.delete(false)
+        opts.map { |k, v| v.nil? ? "--#{to_arg k}" : "--#{to_arg k}=#{v}" }
+    end
+
+    def argv
+        options(:broker => broker,
+                :id => @id,
+                :sup_interval => 5,
+                :instance_dir => instances,
+                :pidfile => pidfile,
+                :logfile => logfile,
+                :loglevel => loglevel,
+                detach && :detach => nil) << ":#@port"
     end
 end
 
@@ -207,6 +232,7 @@ class Status
 
     def method_missing(msg, *args, &block)
         @out.write(" [#{msg.to_s.upcase}]\n")
+
         args[0]
     end
 end

@@ -1,4 +1,4 @@
-# encoding: utf-8
+# encoding: utf-(8
 
 require 'json'
 require 'restclient'
@@ -34,7 +34,7 @@ module API
             parent.DELETE(data, *base + path)
         end
 
-        def inspect()
+        def inspect
             self.to_s
         end
 
@@ -44,11 +44,11 @@ module API
     # Base class for sections that return instances.
     class ModelSection < Subsection
 
-        def all()
+        def all
             all_names.map { |name| get(name) }
         end
 
-        def all_names()
+        def all_names
             GET()
         end
 
@@ -71,7 +71,7 @@ module API
         def initialize(url, debug=nil)
             @parent = nil
             @url = url.chomp("/")
-            @DEBUG = !debug.nil? ? debug : ENV["CYME_DEBUG"]
+            @DEBUG = debug.nil? ? ENV["CYME_DEBUG"] : debug
         end
 
         def GET(data={}, *path)
@@ -95,9 +95,8 @@ module API
             url = ([@url] + path).join("/").chomp("/") + "/"
             puts("-> #{method} #{url} #{pformat options[:data]}") if @DEBUG
             begin
-                JSON.parse(
-                    RestClient.method(method.to_s.downcase).call(url,
-                                                                options[:data]))
+                JSON.parse(RestClient.method(
+                    method.to_s.downcase).call(url, options[:data]))
             rescue RestClient::ExceptionWithResponse => exc:
                 raise ClientError.from_error(exc)
             end
@@ -110,24 +109,24 @@ module API
         attr :name
         attr :broker
 
-        def delete()
+        def delete
             parent.delete(name)
         end
 
-        def instances()
+        def instances
             Instances.new(self)
         end
 
-        def queues()
+        def queues
             Queues.new(self)
         end
 
-        def base()
+        def base
             [name]
         end
 
-        def to_s()
-            "<App: #{name} #{broker}"
+        def to_s
+            "<App: #@name #@broker>"
         end
     end
 
@@ -136,14 +135,14 @@ module API
     class Instances < ModelSection
 
         def add(name=nil, opts={})
-            super
+            super()
         end
 
-        def model()
+        def model
             Instance
         end
 
-        def base()
+        def base
             ["instances"]
         end
     end
@@ -158,15 +157,15 @@ module API
         attr :is_enabled
         attr :queues
 
-        def delete()
+        def delete
             DELETE()
         end
 
-        def consumers()
+        def consumers
             Consumers.new(self)
         end
 
-        def stats()
+        def stats
             GET({}, ["stats"])
         end
 
@@ -174,11 +173,11 @@ module API
             POST({"max" => max, "min" => min}, ["autoscale"])
         end
 
-        def to_s()
-            "<Instance: #{name}>"
+        def to_s
+            "<Instance: #@name>"
         end
 
-        def base()
+        def base
             [name]
         end
     end
@@ -187,11 +186,11 @@ module API
     # +instance.consumers+ section.
     class Consumers < Subsection
 
-        def all()
+        def all
             GET()
         end
 
-        def all_names()
+        def all_names
             all.keys()
         end
 
@@ -207,7 +206,7 @@ module API
             delete(name)
         end
 
-        def base()
+        def base
             ["queues"]
         end
     end
@@ -216,11 +215,11 @@ module API
     # +app.queues+ section.
     class Queues < ModelSection
 
-        def model()
+        def model
             Q
         end
 
-        def base()
+        def base
             ["queues"]
         end
     end
@@ -234,15 +233,15 @@ module API
         attr :routing_key
         attr :options
 
-        def delete()
+        def delete
             DELETE()
         end
 
-        def to_s()
-            "<Queue: #{name}>"
+        def to_s
+            "<Queue: #@name>"
         end
 
-        def base()
+        def base
             [name]
         end
     end

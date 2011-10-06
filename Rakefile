@@ -11,34 +11,29 @@ end
 require 'rake'
 
 require 'jeweler'
+require File.expand_path("../lib/cyme/meta", __FILE__)
+require 'rake/rdoctask'
+
+
+meta = Cyme::Meta.new()
+
 Jeweler::Tasks.new do |gem|
-  # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "cyme"
-  gem.version = File.read("VERSION").chomp
-  gem.license = "BSD (3 Clause)"
-  gem.summary = %Q{Celery Instance Manager client for Ruby}
-  gem.description = %Q{
-Celery Instance Manager client for Ruby.
-}
-  gem.email = "ask@celeryproject.org"
-  gem.authors = ["Ask Solem"]
-  gem.files = FileList["**/*"].exclude("*~")
-  gem.executables = FileList["bin/*"].pathmap("%f")
+  meta.contribute_to_spec(gem)
 end
 Jeweler::RubygemsDotOrgTasks.new
 
 require 'spec/rake/spectask'
 
-desc "Run all tests"
+desc "Run unit tests"
 Spec::Rake::SpecTask.new(:test) do |t|
-  t.spec_opts = ["-cfs"]
-  t.spec_files = FileList["#{File.expand_path(File.dirname(__FILE__))}/spec/**/*_spec.rb"].sort
+  t.spec_opts = ["--format", "specdoc", "--colour"]
+  t.spec_files = FileList["spec/**/*_spec.rb"]
 end
 
 desc "Run all tests with code coverage"
 Spec::Rake::SpecTask.new(:coverage) do |t|
-  t.spec_opts = ["-cfs"]
-  t.spec_files = FileList["#{File.expand_path(File.dirname(__FILE__))}/spec/**/*_spec.rb"].sort
+  t.spec_opts = ["--format", "specdoc", "--colour"]
+  t.spec_files = FileList["spec/**/*_spec.rb"]
   t.rcov = true
   # Exclude gems used
   t.rcov_opts = ['--exclude', '^/']

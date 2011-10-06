@@ -85,7 +85,7 @@ module Cyme
 #
 class Client < Cyme::API::RootSection
 
-    def model()
+    def model
         Cyme::API::App
     end
 
@@ -104,6 +104,14 @@ class Client < Cyme::API::RootSection
         rescue Errno::ECONNREFUSED
             return false
         end
+    end
+
+    def branches
+        GET({}, *["branches"])
+    end
+
+    def branch_info(id)
+        GET({}, *["branches", id])
     end
 
 end

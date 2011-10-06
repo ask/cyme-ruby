@@ -14,8 +14,8 @@ class TimeoutError < Exception
         @ppid = ppid
     end
 
-    def to_s()
-        "timeout after #{timeout}s (ppid=#{ppid})"
+    def to_s
+        "timeout after #{timeout}s (ppid=#@ppid)"
     end
 end
 
@@ -37,8 +37,8 @@ class ClientError < Exception
         @traceback = traceback
     end
 
-    def to_s()
-        "NOK #{@code}: #{@error}\n#{@traceback}"
+    def to_s
+        "NOK #@code: #@error\n#@traceback"
     end
 
     # create instance from RestClient::ExceptionWithResponse instance.

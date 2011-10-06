@@ -1,6 +1,7 @@
 source "http://rubygems.org"
 
-gem 'restclient'
+gem "rest-client", "~> 1.6.7"
+gem "json"
 
 # Everything needed to run rake, tests, etc.
 group :development do
