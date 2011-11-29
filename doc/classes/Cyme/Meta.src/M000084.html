@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>new (Cyme::Meta)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/cyme/meta.rb, line 12</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>()
+            <span class="ruby-ivar">@name</span> = <span class="ruby-value str">'cyme'</span>
+            <span class="ruby-ivar">@version</span> = <span class="ruby-constant">VERSION</span>.<span class="ruby-identifier">dup</span>
+            <span class="ruby-ivar">@authors</span> = [<span class="ruby-value str">'Ask Solem'</span>]
+            <span class="ruby-ivar">@platform</span> = <span class="ruby-constant">Gem</span><span class="ruby-operator">::</span><span class="ruby-constant">Platform</span><span class="ruby-operator">::</span><span class="ruby-constant">RUBY</span>
+            <span class="ruby-ivar">@has_rdoc</span> = <span class="ruby-keyword kw">true</span>
+            <span class="ruby-ivar">@extra_rdoc_files</span> = [<span class="ruby-value str">'LICENSE'</span>, <span class="ruby-value str">'README.md'</span>]
+            <span class="ruby-ivar">@email</span> = [<span class="ruby-constant">Base64</span>.<span class="ruby-identifier">decode64</span>(<span class="ruby-value str">'YXNrQGNlbGVyeXByb2plY3Qub3Jn\n'</span>)]
+            <span class="ruby-ivar">@homepage</span> = <span class="ruby-value str">'http://github.com/ask/cyme-ruby'</span>
+            <span class="ruby-ivar">@description</span> = <span class="ruby-ivar">@summary</span> = <span class="ruby-value str">'Celery Instance Manager client for Ruby'</span>
+
+            <span class="ruby-comment cmt"># files</span>
+            <span class="ruby-ivar">@files</span> = [<span class="ruby-value str">'LICENSE'</span>, <span class="ruby-value str">'README.md'</span>, <span class="ruby-value str">'Rakefile'</span>,
+                      <span class="ruby-value str">'lib/cyme/api.rb'</span>,
+                      <span class="ruby-value str">'lib/cyme/branch.rb'</span>,
+                      <span class="ruby-value str">'lib/cyme/client.rb'</span>,
+                      <span class="ruby-value str">'lib/cyme/exceptions.rb'</span>,
+                      <span class="ruby-value str">'lib/cyme/meta.rb'</span>,
+                      <span class="ruby-value str">'lib/cyme/utils.rb'</span>,
+                      <span class="ruby-value str">'spec/spec_helper.rb'</span>,
+                      <span class="ruby-value str">'spec/branch_spec.rb'</span>]
+            <span class="ruby-ivar">@require_paths</span> = [<span class="ruby-value str">'lib'</span>]
+
+            <span class="ruby-ivar">@dependencies</span> = [<span class="ruby-value str">'rest-client'</span>, <span class="ruby-value str">'json'</span>]
+
+            <span class="ruby-comment cmt"># RubyForge</span>
+            <span class="ruby-ivar">@rubyforge_project</span> = <span class="ruby-value str">'cyme'</span>
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

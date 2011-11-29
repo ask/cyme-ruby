@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>new (Cyme::Branch)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/cyme/branch.rb, line 45</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">workdir</span>, <span class="ruby-identifier">opts</span>={})
+            <span class="ruby-ivar">@workdir</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">workdir</span>)
+            <span class="ruby-ivar">@id</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:id</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">Socket</span>.<span class="ruby-identifier">gethostname</span>()
+            <span class="ruby-ivar">@broker</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:broker</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">DEFAULT_BROKER</span>
+            <span class="ruby-ivar">@loglevel</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:loglevel</span>] <span class="ruby-operator">||</span> <span class="ruby-value str">'INFO'</span>
+            <span class="ruby-ivar">@controllers</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:controllers</span>] <span class="ruby-operator">||</span> <span class="ruby-value">2</span>
+            <span class="ruby-ivar">@port</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:port</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">PORT</span>
+            <span class="ruby-ivar">@detach</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:detach</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:detach</span>] <span class="ruby-operator">:</span> <span class="ruby-keyword kw">true</span>
+            <span class="ruby-ivar">@DEBUG</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:debug</span>].<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:debug</span>] <span class="ruby-operator">:</span> <span class="ruby-constant">ENV</span>[<span class="ruby-value str">'CYME_DEBUG'</span>]
+            <span class="ruby-ivar">@default_out</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:out</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">STDOUT</span>
+            <span class="ruby-ivar">@branch_path</span> = <span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:branch_path</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">BRANCH_PATH</span>
+            <span class="ruby-ivar">@backend</span> = <span class="ruby-constant">Cyme</span>.<span class="ruby-identifier">get_backend</span>(<span class="ruby-identifier">opts</span>[<span class="ruby-identifier">:backend</span>])
+            <span class="ruby-ivar">@started</span> = <span class="ruby-keyword kw">false</span>
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

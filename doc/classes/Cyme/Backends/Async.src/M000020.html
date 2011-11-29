@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>request (Cyme::Backends::Async)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/cyme/backends/async.rb, line 50</span>
+            <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">request</span>(<span class="ruby-identifier">method</span>, <span class="ruby-identifier">url</span>, <span class="ruby-identifier">data</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+                <span class="ruby-identifier">block</span> = <span class="ruby-identifier">block</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-constant">JSON</span>.<span class="ruby-identifier">method</span>(<span class="ruby-identifier">:parse</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">block</span>
+                <span class="ruby-identifier">req</span> = <span class="ruby-constant">EventMachine</span><span class="ruby-operator">::</span><span class="ruby-constant">HttpRequest</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">url</span>)
+                <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">method</span> <span class="ruby-operator">==</span> <span class="ruby-value str">'get'</span>
+                    <span class="ruby-identifier">req</span> = <span class="ruby-identifier">req</span>.<span class="ruby-identifier">get</span>(<span class="ruby-identifier">:query</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">data</span>)
+                <span class="ruby-keyword kw">else</span>
+                    <span class="ruby-identifier">req</span> = <span class="ruby-identifier">req</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_sym</span>, <span class="ruby-identifier">:body</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">data</span>)
+                <span class="ruby-keyword kw">end</span>
+
+                <span class="ruby-identifier">promise</span> = <span class="ruby-constant">MutableDeferrable</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">:proxy_errback</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">req</span>)
+                <span class="ruby-identifier">req</span>.<span class="ruby-identifier">callback</span> <span class="ruby-keyword kw">do</span>
+                    <span class="ruby-identifier">status</span> = <span class="ruby-identifier">req</span>.<span class="ruby-identifier">response_header</span>.<span class="ruby-identifier">status</span>
+                    <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">status</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-value">200</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">status</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">300</span>
+                        <span class="ruby-identifier">promise</span>.<span class="ruby-identifier">succeed</span>(<span class="ruby-identifier">block</span>[<span class="ruby-identifier">req</span>.<span class="ruby-identifier">response</span>])
+                    <span class="ruby-keyword kw">else</span>
+                        <span class="ruby-identifier">promise</span>.<span class="ruby-identifier">fail</span>(<span class="ruby-constant">Cyme</span><span class="ruby-operator">::</span><span class="ruby-constant">ClientError</span>.<span class="ruby-identifier">from_em_error</span>(<span class="ruby-identifier">req</span>))
+                    <span class="ruby-keyword kw">end</span>
+                <span class="ruby-keyword kw">end</span>
+
+                <span class="ruby-identifier">promise</span>
+            <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
