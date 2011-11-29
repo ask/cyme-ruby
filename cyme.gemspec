@@ -1,8 +1,8 @@
 #!/usr/bin/env gem build
 # encoding: utf-8
 
-require "base64"
-require File.expand_path("../lib/cyme/meta", __FILE__)
+require 'base64'
+require File.expand_path('../lib/cyme/meta', __FILE__)
 
 meta = Cyme::Meta.new()
 

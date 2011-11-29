@@ -11,7 +11,7 @@ end
 require 'rake'
 
 require 'jeweler'
-require File.expand_path("../lib/cyme/meta", __FILE__)
+require File.expand_path('../lib/cyme/meta', __FILE__)
 require 'rake/rdoctask'
 
 
@@ -24,16 +24,16 @@ Jeweler::RubygemsDotOrgTasks.new
 
 require 'spec/rake/spectask'
 
-desc "Run unit tests"
+desc 'Run unit tests'
 Spec::Rake::SpecTask.new(:test) do |t|
-  t.spec_opts = ["--format", "specdoc", "--colour"]
-  t.spec_files = FileList["spec/**/*_spec.rb"]
+  t.spec_opts = ['--format', 'specdoc', '--colour']
+  t.spec_files = FileList['spec/**/*_spec.rb']
 end
 
-desc "Run all tests with code coverage"
+desc 'Run all tests with code coverage'
 Spec::Rake::SpecTask.new(:coverage) do |t|
-  t.spec_opts = ["--format", "specdoc", "--colour"]
-  t.spec_files = FileList["spec/**/*_spec.rb"]
+  t.spec_opts = ['--format', 'specdoc', '--colour']
+  t.spec_files = FileList['spec/**/*_spec.rb']
   t.rcov = true
   # Exclude gems used
   t.rcov_opts = ['--exclude', '^/']

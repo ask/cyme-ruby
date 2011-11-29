@@ -9,7 +9,8 @@ class MockBranch < Cyme::Branch
     attr_accessor :responds_to_signal
 
     def initialize(*args)
-        super(TEST_PATH, *args)
+        super(CYME_TEST_PATH, *args)
+        @default_out = CYME_OUTPUT
         @forks = 0
         @execs = 0
         @responds_to_signal = false
@@ -39,19 +40,19 @@ end
 
 describe Cyme::Branch do
 
-    describe "States" do
+    describe 'States' do
 
-        it "should detach by default" do
+        it 'should detach by default' do
             MockBranch.new().detach.should == true
         end
 
-        it "should be alive after started" do
+        it 'should be alive after started' do
             b = MockBranch.new()
             b.start()
             b.started.should == true
         end
 
-        it "should not start if already started" do
+        it 'should not start if already started' do
             b = MockBranch.new()
             b.responds_to_signal = true
             b.start()

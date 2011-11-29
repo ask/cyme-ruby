@@ -5,6 +5,9 @@ gem "json"
 
 # Everything needed to run rake, tests, etc.
 group :development do
+  gem 'eventmachine'
+  gem 'em-http-request'
+  gem 'guid'
   gem 'jeweler', '~> 1.5.2'
   gem 'rake'
   gem 'rspec', '~> 1.3'
